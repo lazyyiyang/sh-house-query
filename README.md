@@ -9,15 +9,15 @@
 export AMAP_KEY=你的高德Web服务Key   # lbs.amap.com 免费申请
 
 # ① 通用采集 CLI（出租挂牌 / 宏观开发 / 二手房成交 / 两点距离）
-python3 shfetch.py rent --region 浦东 --rtype 4
-python3 shfetch.py dev  --months 12
-python3 shfetch.py deal --name 康定大楼
-python3 shfetch.py geo  --from 康定大楼 --to 人民广场
+python3 scripts/shfetch.py rent --region 浦东 --rtype 4
+python3 scripts/shfetch.py dev  --months 12
+python3 scripts/shfetch.py deal --name 康定大楼
+python3 scripts/shfetch.py geo  --from 康定大楼 --to 人民广场
 
 # ② 多条件选房（买房/租房，含 电梯/楼龄/通勤/地铁 筛选）
-python3 find_buy_taiwu.py        # 太平洋二手房 500-800万
-python3 find_rent_taiwu.py       # 太平洋租房 7000-13000
-python3 find_rent_merged.py      # ★ 房天下+太平洋 并集（最全，40达标小区）
+python3 scripts/find_buy_taiwu.py        # 太平洋二手房 500-800万
+python3 scripts/find_rent_taiwu.py       # 太平洋租房 7000-13000
+python3 scripts/find_rent_merged.py      # ★ 房天下+太平洋 并集（最全，40达标小区）
 ```
 
 ## 数据源实测结论（2026-08）
@@ -39,13 +39,15 @@ python3 find_rent_merged.py      # ★ 房天下+太平洋 并集（最全，40�
 ## 文件结构
 
 ```
-shfetch.py           # 通用采集 CLI（rent/dev/deal/geo）
-find_homes.py        # 共享基础层：cookie/key/taiwu_pull/枚举缓存/高德
-find_buy_taiwu.py    # 太平洋二手房 500-800万
-find_rent_taiwu.py   # 太平洋租房 7000-13000
-find_rent_fang.py    # 房天下租房
-find_rent_merged.py  # ★ 两源并集（最全）
-find_rent.py         # 上海租赁平台租房
+SKILL.md             # skill 入口（仓库根）
+scripts/
+  shfetch.py         # 通用采集 CLI（rent/dev/deal/geo）
+  find_homes.py      # 共享基础层：cookie/key/taiwu_pull/枚举缓存/高德
+  find_buy_taiwu.py  # 太平洋二手房 500-800万
+  find_rent_taiwu.py # 太平洋租房 7000-13000
+  find_rent_fang.py  # 房天下租房
+  find_rent_merged.py# ★ 两源并集（最全）
+  find_rent.py       # 上海租赁平台租房
 data/                # 缓存(xiaoqu_all/metro.json) + 结果CSV
 ```
 

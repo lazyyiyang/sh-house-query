@@ -15,7 +15,7 @@ import time
 
 import find_homes as f
 
-DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 os.makedirs(DATA, exist_ok=True)
 LO, HI = 7000, 13000
 AREAS = [3, 4]

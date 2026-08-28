@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""太平洋房屋租房筛选：长宁+静安，7000-13000元/月，电梯房>2000年，到金钟路968号<40分，地铁<10分。
+"""太平洋房屋二手房筛选：长宁+静安，500-800万，电梯房>2000年，到金钟路968号<40分，地铁<10分。
 
-复用 find_homes.taiwu_pull；地铁用官方 nearMetroStationDistance(≤600m)；金钟路通勤用高德驾车。
-用法：python3 find_rent_taiwu.py
-输出：data/taiwu_result.csv
+复用 find_homes.taiwu_pull(ptype=1)；地铁用官方 nearMetroStationDistance(≤600m)；金钟路用高德驾车。
+用法：python3 find_buy_taiwu.py
+输出：data/taiwu_buy_result.csv
 """
 
 import csv
@@ -13,15 +13,15 @@ import time
 
 import find_homes as f
 
-DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 os.makedirs(DATA, exist_ok=True)
-LO, HI = 7000, 13000
-AREAS = [3, 4]  # 长宁, 静安
+PRICE_LO, PRICE_HI = 500, 800  # 万
+AREAS = [3, 4]
 
 
 def main():
-    print("1) 拉取太平洋房屋 长宁+静安 7000-13000...")
-    li = f.taiwu_pull(ptype=2, areas=AREAS, price_lo=LO, price_hi=HI)
+    print("1) 拉取太平洋房屋 长宁+静安 500-800万...")
+    li = f.taiwu_pull(ptype=1, areas=AREAS, price_lo=PRICE_LO, price_hi=PRICE_HI)
     print(f"   → {len(li)} 条")
     cand = [
         x
@@ -30,9 +30,9 @@ def main():
         and str(x.get("createYear", "0"))[:4].isdigit()
         and int(str(x.get("createYear"))[:4]) >= 2001
         and (x.get("elevatorTag") or (x.get("totalLayer") or 0) >= 7)
-        and LO <= int(x.get("rentPrice") or 0) <= HI
+        and PRICE_LO <= int(x.get("price") or 0) <= PRICE_HI
     ]
-    print(f"2) 建成>2000 + 电梯 + 7000-13000: {len(cand)} 条")
+    print(f"2) 建成>2000 + 电梯 + 500-800万: {len(cand)} 条")
     from collections import defaultdict
 
     agg = defaultdict(list)
@@ -52,7 +52,7 @@ def main():
     print(f"   目标{tg}, 地铁站{len(stations)}")
 
     results = []
-    for i, (ename, rents) in enumerate(agg.items()):
+    for i, (ename, homes) in enumerate(agg.items()):
         coord = f.resolve_coord(ename)
         if not coord:
             continue
@@ -60,21 +60,21 @@ def main():
         if km >= 8:
             continue
         drive = f.amap_drive(coord, tg)
-        mdist = min([r.get("nearMetroStationDistance") or 999999 for r in rents])
+        mdist = min([h.get("nearMetroStationDistance") or 999999 for h in homes])
         ok = drive and drive[1] < 40 and mdist <= 600
         results.append(
             {
                 "name": ename,
-                "area": rents[0]["areaName"],
-                "year": rents[0].get("createYear"),
-                "totalLayer": rents[0].get("totalLayer"),
+                "area": homes[0]["areaName"],
+                "year": homes[0].get("createYear"),
+                "totalLayer": homes[0].get("totalLayer"),
                 "km": km,
                 "drive": f"{drive[0]:.1f}km/{drive[1]:.0f}分" if drive else "-",
                 "metro_d": mdist if mdist < 999999 else "-",
-                "rent_n": len(rents),
-                "rent_info": " | ".join(
-                    f"{r['roomNum']}室{r['hallNum']}厅{r['propertySquare']}㎡{r['rentPrice']}元"
-                    for r in rents[:4]
+                "sale_n": len(homes),
+                "sale_info": " | ".join(
+                    f"{h['roomNum']}室{h['hallNum']}厅{h['propertySquare']}㎡{h['price']}万({h['priceUnit']}元/㎡)"
+                    for h in homes[:4]
                 ),
                 "OK": "✓" if ok else "",
             }
@@ -85,7 +85,10 @@ def main():
 
     results.sort(key=lambda r: (not r["OK"], r["km"]))
     with open(
-        os.path.join(DATA, "taiwu_result.csv"), "w", newline="", encoding="utf-8-sig"
+        os.path.join(DATA, "taiwu_buy_result.csv"),
+        "w",
+        newline="",
+        encoding="utf-8-sig",
     ) as fp:
         w = csv.DictWriter(
             fp,
@@ -98,17 +101,17 @@ def main():
                 "km",
                 "drive",
                 "metro_d",
-                "rent_n",
-                "rent_info",
+                "sale_n",
+                "sale_info",
             ],
         )
         w.writeheader()
         w.writerows(results)
-    print(f"\n共 {len(results)} 小区写入 data/taiwu_result.csv")
+    print(f"\n共 {len(results)} 小区写入 data/taiwu_buy_result.csv")
     for r in results:
         if r["OK"]:
             print(
-                f"✓ {r['name']} {r['area']} {r['year']}年 金钟路{r['drive']} 地铁{r['metro_d']} 房源{r['rent_n']}套\n     {r['rent_info']}"
+                f"✓ {r['name']} {r['area']} {r['year']}年 金钟路{r['drive']} 地铁{r['metro_d']} 房源{r['sale_n']}套\n     {r['sale_info']}"
             )
 
 
