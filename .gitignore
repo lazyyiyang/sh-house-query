@@ -1,0 +1,9 @@
+# 数据缓存与结果
+data/
+# 环境/依赖
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+# 密钥(若落盘)
+.env
